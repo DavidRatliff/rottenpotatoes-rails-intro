@@ -11,7 +11,7 @@ class MoviesController < ApplicationController
   end
 
   def index
-    sort_by = params[:sort_by]
+    sort_by = params[:sort_by] || session[:sort_by]
     if sort_by == 'title'
       @title_header = 'hilite'
     elsif sort_by == 'release_date'
@@ -19,9 +19,16 @@ class MoviesController < ApplicationController
     end
     
     @all_ratings = Movie.all_ratings
-    @sel_ratings = params[:ratings] || {}
+    @sel_ratings = params[:ratings] || session[:ratings] || {}
     if @sel_ratings == {}
       @sel_ratings = Hash[@all_ratings.map {|rating| [rating, 1]}]
+    end
+    
+    if params[:sort_by] != session[:sort_by] or params[:ratings] != session[:ratings]
+      session[:sort_by] = params[:sort_by]
+      session[:ratings] = params[:ratings]
+      flash.keep
+      redirect_to :sort_by => sort_by, :ratings => @sel_ratings and return
     end
     
     @movies = Movie.with_ratings(@sel_ratings.keys).order(sort_by)
