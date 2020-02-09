@@ -17,7 +17,14 @@ class MoviesController < ApplicationController
     elsif sort_by == 'release_date'
       @release_date_header = 'hilite'
     end
-    @movies = Movie.order(sort_by)
+    
+    @all_ratings = Movie.all_ratings
+    @sel_ratings = params[:ratings] || {}
+    if @sel_ratings == {}
+      @sel_ratings = Hash[@all_ratings.map {|rating| [rating, 1]}]
+    end
+    
+    @movies = Movie.with_ratings(@sel_ratings.keys).order(sort_by)
   end
 
   def new
